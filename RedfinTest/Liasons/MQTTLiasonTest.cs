@@ -6,7 +6,7 @@ using Moq;
 using Redfin.Liasons;
 using Redfin.Models.Options;
 using Redfin.Models.Shared;
-using TwoMQTT.Utils;
+using TwoMQTT.Interfaces;
 
 namespace RedfinTest.Liasons;
 
