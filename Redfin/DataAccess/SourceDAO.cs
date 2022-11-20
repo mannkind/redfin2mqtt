@@ -74,7 +74,7 @@ public class SourceDAO : ISourceDAO
         this.Logger.LogInformation("Started finding {rpid} from Redfin", rpid);
 
 
-        var url = "https://redfin.com/stingray/api/home/details/avm";
+        var url = "https://www.redfin.com/stingray/api/home/details/avm";
         var query = $"propertyId={rpid}&accessLevel=1";
         var msg = new HttpRequestMessage(HttpMethod.Get, $"{url}?{query}");
         msg.Headers.TryAddWithoutValidation("user-agent", "redfin");
