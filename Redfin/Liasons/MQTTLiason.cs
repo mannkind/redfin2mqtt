@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -25,6 +26,7 @@ public class MQTTLiason : MQTTLiasonBase<Resource, object, SlugMapping, SharedOp
     public MQTTLiason(ILogger<MQTTLiason> logger, IMQTTGenerator generator, IOptions<SharedOpts> sharedOpts) :
         base(logger, generator, sharedOpts)
     {
+        this.DataReceivedExpiration = sharedOpts.Value.DataReceivedExpiration;
     }
 
     /// <inheritdoc />
@@ -45,8 +47,10 @@ public class MQTTLiason : MQTTLiasonBase<Resource, object, SlugMapping, SharedOp
         this.Logger.LogDebug("Found slug {slug} for incoming data for {rpid}", slug, input.RPID);
         results.AddRange(new[]
             {
-                    (this.Generator.StateTopic(slug, nameof(Resource.Estimate)), input.Estimate.ToString()),
-                }
+                this.Generator.DataReceivedTopicPayload(slug),
+
+                (this.Generator.StateTopic(slug, nameof(Resource.Estimate)), input.Estimate.ToString()),
+            }
         );
 
         return results;
@@ -59,11 +63,13 @@ public class MQTTLiason : MQTTLiasonBase<Resource, object, SlugMapping, SharedOp
         var assembly = Assembly.GetAssembly(typeof(Program))?.GetName() ?? new AssemblyName();
         var mapping = new[]
         {
-                new { Sensor = nameof(Resource.Estimate), Type = Const.SENSOR },
-            };
+            new { Sensor = nameof(Resource.Estimate), Type = Const.SENSOR },
+        };
 
         foreach (var input in this.Questions)
         {
+            discoveries.Add(this.Generator.DataReceivedDiscovery(input.Slug, assembly, this.DataReceivedExpiration));
+
             foreach (var map in mapping)
             {
                 this.Logger.LogDebug("Generating discovery for {rpid} - {sensor}", input.RPID, map.Sensor);
@@ -76,4 +82,9 @@ public class MQTTLiason : MQTTLiasonBase<Resource, object, SlugMapping, SharedOp
 
         return discoveries;
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    private readonly TimeSpan DataReceivedExpiration;
 }
