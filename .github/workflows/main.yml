@@ -17,11 +17,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        
+
       - name: Setup dotnet
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '7.0.x'
+          dotnet-version: "8.0.x"
 
       - name: Build Project
         run: dotnet build -c Release -o output Redfin
@@ -32,11 +32,11 @@ jobs:
       - name: Obtain Version
         id: version
         run: echo "number=$(./output/Redfin -- version)" >> $GITHUB_OUTPUT
-          
+
       - name: Upload coverage
         run: bash <(curl -s https://codecov.io/bash)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-  
+
   containerize:
     name: Upload Docker Images
     runs-on: ubuntu-latest
@@ -50,7 +50,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          
+
       - name: Login to GHCR
         uses: docker/login-action@v2
         with:
@@ -83,7 +83,7 @@ jobs:
           build-args: |
             BUILD_VERSION=${{ steps.build_version.outputs.number }}
           tags: "mannkind/redfin2mqtt:dev"
-        
+
       - name: Build and Push (Main)
         if: github.ref == 'refs/heads/main'
         uses: docker/build-push-action@v3
